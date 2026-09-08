@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Matrix // Relógio & Cronômetro</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+  :root{
+    --verde: #00ff41;
+    --verde-fraco: #0a3d1a;
+    --fundo: #000000;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html, body{
+    height:100%;
+    background: var(--fundo);
+    font-family: 'Share Tech Mono', monospace;
+    overflow: hidden;
+  }
+
+  .container{
+    position:relative;
+    display:flex;
+    width:100vw;
+    height:100vh;
+  }
+
+  /* divisória central */
+  .divisoria{
+    position:absolute;
+    top:0; bottom:0; left:50%;
+    width:1px;
+    background: var(--verde);
+    box-shadow: 0 0 8px var(--verde), 0 0 16px var(--verde);
+    z-index:5;
+    opacity:0.6;
+  }
+
+  .painel{
+    position:relative;
+    width:50%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    padding: 0 32px;
+  }
+
+  canvas.chuva{
+    position:absolute;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    z-index:0;
+  }
+
+  .conteudo{
+    position:relative;
+    z-index:2;
+    text-align:center;
+    color: var(--verde);
+    background: rgba(0,0,0,0.88);
+    border: 1px solid var(--verde);
+    border-radius: 4px;
+    padding: 36px 44px;
+    max-width: 100%;
+    box-sizing: border-box;
+    box-shadow:
+      0 0 8px var(--verde),
+      0 0 20px rgba(0,255,65,0.6),
+      0 0 40px rgba(0,255,65,0.35),
+      inset 0 0 14px rgba(0,255,65,0.25);
+  }
+
+  .rotulo{
+    font-size: clamp(12px, 1.6vw, 16px);
+    letter-spacing: 6px;
+    opacity: 0.65;
+    margin-bottom: 18px;
+    text-shadow: 0 0 6px var(--verde);
+  }
+
+  /* RELÓGIO */
+  .relogio-hora{
+    font-size: clamp(38px, 7vw, 84px);
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--verde), 0 0 24px var(--verde);
+    letter-spacing: 4px;
+  }
+
+  .relogio-data{
+    margin-top: 14px;
+    font-size: clamp(12px, 1.6vw, 18px);
+    opacity: 0.75;
+    text-shadow: 0 0 6px var(--verde);
+  }
+
+  /* CRONÔMETRO */
+  .crono-tempo{
+    font-size: clamp(38px, 7vw, 84px);
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--verde), 0 0 24px var(--verde);
+    letter-spacing: 4px;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .crono-botoes{
+    margin-top: 28px;
+    display:flex;
+    justify-content:center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .btn{
+    background: transparent;
+    border: 1px solid var(--verde);
+    color: var(--verde);
+    font-family: 'Share Tech Mono', monospace;
+    padding: 10px 22px;
+    font-size: 14px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-shadow: 0 0 4px var(--verde);
+    box-shadow: 0 0 6px rgba(0,255,65,0.3) inset;
+    transition: all 0.15s ease;
+  }
+
+  .btn:hover{
+    background: var(--verde);
+    color: #000;
+    box-shadow: 0 0 18px var(--verde);
+  }
+
+  .btn:active{ transform: scale(0.95); }
+
+  .voltas{
+    margin-top: 18px;
+    max-height: 22vh;
+    overflow-y: auto;
+    width: min(280px, 70vw);
+    font-size: 13px;
+    opacity: 0.8;
+  }
+  .voltas::-webkit-scrollbar{ width:4px; }
+  .voltas::-webkit-scrollbar-thumb{ background: var(--verde); }
+
+  .volta-item{
+    display:flex;
+    justify-content:space-between;
+    border-bottom: 1px solid var(--verde-fraco);
+    padding: 4px 6px;
+  }
+
+  @media (max-width: 700px){
+    .container{ flex-direction: column; }
+    .painel{ width:100%; height:50%; }
+    .divisoria{ top:50%; left:0; right:0; bottom:auto; width:100%; height:1px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="divisoria"></div>
+
+  <div class="painel" id="painel-relogio">
+    <canvas class="chuva" id="chuva1"></canvas>
+    <div class="conteudo">
+      <div class="rotulo">RELÓGIO</div>
+      <div class="relogio-hora" id="hora">00:00:00</div>
+      <div class="relogio-data" id="data">--/--/----</div>
+    </div>
+  </div>
+
+  <div class="painel" id="painel-crono">
+    <canvas class="chuva" id="chuva2"></canvas>
+    <div class="conteudo">
+      <div class="rotulo">CRONÔMETRO</div>
+      <div class="crono-tempo" id="crono">00:00:00.00</div>
+      <div class="crono-botoes">
+        <button class="btn" id="btn-start">INICIAR</button>
+        <button class="btn" id="btn-lap">VOLTA</button>
+        <button class="btn" id="btn-reset">ZERAR</button>
+      </div>
+      <div class="voltas" id="lista-voltas"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- chuva de código binário (matrix rain) ----------
+  function iniciarChuva(canvasId){
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    let largura, altura, colunas, gotas;
+    const caracteres = '01';
+    const tamanhoFonte = 16;
+
+    function redimensionar(){
+      largura = canvas.width = canvas.offsetWidth;
+      altura = canvas.height = canvas.offsetHeight;
+      colunas = Math.floor(largura / tamanhoFonte);
+      gotas = new Array(colunas).fill(1);
+    }
+    redimensionar();
+    window.addEventListener('resize', redimensionar);
+
+    function desenhar(){
+      ctx.fillStyle = 'rgba(0,0,0,0.08)';
+      ctx.fillRect(0,0,largura,altura);
+
+      ctx.fillStyle = '#00ff41';
+      ctx.font = tamanhoFonte + 'px monospace';
+
+      for(let i=0; i<gotas.length; i++){
+        const char = caracteres[Math.floor(Math.random()*caracteres.length)];
+        const x = i * tamanhoFonte;
+        const y = gotas[i] * tamanhoFonte;
+        ctx.fillText(char, x, y);
+
+        if(y > altura && Math.random() > 0.975){
+          gotas[i] = 0;
+        }
+        gotas[i]++;
+      }
+    }
+    setInterval(desenhar, 45);
+  }
+
+  iniciarChuva('chuva1');
+  iniciarChuva('chuva2');
+
+  // ---------- relógio ----------
+  function atualizarRelogio(){
+    const agora = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    document.getElementById('hora').textContent =
+      `${pad(agora.getHours())}:${pad(agora.getMinutes())}:${pad(agora.getSeconds())}`;
+    document.getElementById('data').textContent =
+      `${pad(agora.getDate())}/${pad(agora.getMonth()+1)}/${agora.getFullYear()}`;
+  }
+  atualizarRelogio();
+  setInterval(atualizarRelogio, 1000);
+
+  // ---------- cronômetro ----------
+  let inicio = 0;
+  let decorrido = 0;
+  let rodando = false;
+  let intervalo = null;
+  let numeroVolta = 1;
+
+  const elCrono = document.getElementById('crono');
+  const btnStart = document.getElementById('btn-start');
+  const btnLap = document.getElementById('btn-lap');
+  const btnReset = document.getElementById('btn-reset');
+  const listaVoltas = document.getElementById('lista-voltas');
+
+  function formatarTempo(ms){
+    const pad = (n, tam=2) => String(n).padStart(tam,'0');
+    const totalMs = Math.floor(ms);
+    const horas = Math.floor(totalMs / 3600000);
+    const minutos = Math.floor((totalMs % 3600000) / 60000);
+    const segundos = Math.floor((totalMs % 60000) / 1000);
+    const centesimos = Math.floor((totalMs % 1000) / 10);
+    return `${pad(horas)}:${pad(minutos)}:${pad(segundos)}.${pad(centesimos)}`;
+  }
+
+  function atualizarCrono(){
+    const agora = Date.now();
+    elCrono.textContent = formatarTempo(agora - inicio + decorrido);
+  }
+
+  btnStart.addEventListener('click', () => {
+    if(!rodando){
+      inicio = Date.now();
+      intervalo = setInterval(atualizarCrono, 30);
+      rodando = true;
+      btnStart.textContent = 'PAUSAR';
+    } else {
+      decorrido += Date.now() - inicio;
+      clearInterval(intervalo);
+      rodando = false;
+      btnStart.textContent = 'INICIAR';
+    }
+  });
+
+  btnLap.addEventListener('click', () => {
+    if(!rodando) return;
+    const item = document.createElement('div');
+    item.className = 'volta-item';
+    item.innerHTML = `<span>VOLTA ${numeroVolta++}</span><span>${elCrono.textContent}</span>`;
+    listaVoltas.prepend(item);
+  });
+
+  btnReset.addEventListener('click', () => {
+    clearInterval(intervalo);
+    rodando = false;
+    decorrido = 0;
+    numeroVolta = 1;
+    elCrono.textContent = '00:00:00.00';
+    btnStart.textContent = 'INICIAR';
+    listaVoltas.innerHTML = '';
+  });
+</script>
+
+</body>
+</html>
