@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo de Barras de Busca</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;1,400&family=Work+Sans:wght@400;500;600&display=swap');
+
+  :root{
+    --papel: #F6F4EE;
+    --tinta: #17181C;
+    --tinta-suave: #55564F;
+    --linha: #DAD6C9;
+    --acento: #0F6E62;
+    --acento-claro: #E4F0EC;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: 'Work Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .topo{
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 88px 24px 56px;
+  }
+
+  .topo h1{
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: clamp(34px, 5vw, 52px);
+    line-height: 1.15;
+    margin: 0 0 18px;
+    max-width: 16ch;
+  }
+
+  .topo p{
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--tinta-suave);
+    max-width: 52ch;
+    margin: 0;
+  }
+
+  main{
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 24px 120px;
+  }
+
+  .item{
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 40px;
+    align-items: start;
+    padding: 60px 0;
+    border-top: 1px solid var(--linha);
+  }
+
+  .item:last-child{ border-bottom: 1px solid var(--linha); }
+
+  .item h2{
+    font-family: 'Newsreader', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 22px;
+    margin: 0 0 10px;
+  }
+
+  .item .desc{
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--tinta-suave);
+  }
+
+  .campo{
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+  }
+
+  @media (max-width: 680px){
+    .item{ grid-template-columns: 1fr; gap: 16px; }
+  }
+
+  /* ---------- painel de sugestões, compartilhado por todos os modelos ---------- */
+  .menu-sugestoes{
+    position:absolute;
+    top: calc(100% + 10px);
+    left:0; right:0;
+    background:#fff;
+    border-radius: 12px;
+    box-shadow: 0 24px 48px rgba(23,24,28,0.10), 0 2px 10px rgba(23,24,28,0.05);
+    padding: 6px 0;
+    opacity:0;
+    transform: translateY(-6px);
+    pointer-events:none;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+    z-index: 8;
+  }
+  .menu-sugestoes.visivel{ opacity:1; transform:translateY(0); pointer-events:auto; }
+
+  .menu-sugestoes .cabecalho{
+    font-family:'Newsreader', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--tinta-suave);
+    padding: 12px 20px 8px;
+  }
+
+  .menu-sugestoes .linha{
+    display:flex; align-items:center; gap:14px;
+    padding: 10px 20px;
+    cursor:pointer;
+    font-size: 14.5px;
+  }
+  .menu-sugestoes .linha .num{
+    font-size: 12px;
+    color: #BBB8AA;
+    font-variant-numeric: tabular-nums;
+    width: 14px;
+    flex-shrink:0;
+  }
+  .menu-sugestoes .linha .lupa{
+    flex-shrink:0; opacity:0.35;
+  }
+  .menu-sugestoes .linha:hover{ background: var(--acento-claro); }
+  .menu-sugestoes .linha:hover .num{ color: var(--acento); }
+  .menu-sugestoes .linha:hover .lupa{ opacity:0.7; }
+  .menu-sugestoes mark{ background:none; color: var(--acento); font-weight:600; }
+  .menu-sugestoes .vazio{
+    padding: 14px 20px;
+    font-size: 13.5px;
+    color: #9C9A8E;
+  }
+
+  /* variante escura, usada sobre o painel de vidro */
+  .menu-sugestoes.escuro{
+    background: rgba(23,24,28,0.92);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 24px 48px rgba(0,0,0,0.35);
+  }
+  .menu-sugestoes.escuro .cabecalho{ color: rgba(255,255,255,0.55); }
+  .menu-sugestoes.escuro .linha{ color: #fff; }
+  .menu-sugestoes.escuro .linha .num{ color: rgba(255,255,255,0.4); }
+  .menu-sugestoes.escuro .linha:hover{ background: rgba(255,255,255,0.10); }
+  .menu-sugestoes.escuro .linha:hover .num{ color: #7FD8C4; }
+  .menu-sugestoes.escuro mark{ color: #7FD8C4; }
+  .menu-sugestoes.escuro .vazio{ color: rgba(255,255,255,0.5); }
+
+  /* ---------- 1. underline mínima ---------- */
+  .v-underline-campo{ position: relative; }
+  .v-underline-campo input{
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--tinta);
+    background: transparent;
+    padding: 10px 2px;
+    font-size: 17px;
+    font-family: 'Work Sans', sans-serif;
+    color: var(--tinta);
+    outline: none;
+  }
+  .v-underline-campo input::placeholder{ color: #9C9A8E; }
+  .v-underline-campo .risco{
+    position: absolute;
+    left:0; bottom:0;
+    height: 2px;
+    width: 0%;
+    background: var(--acento);
+    transition: width 0.3s ease;
+  }
+  .v-underline-campo input:focus ~ .risco{ width: 100%; }
+
+  /* ---------- 2. pill com ícone ---------- */
+  .v-pill{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid var(--linha);
+    border-radius: 999px;
+    padding: 12px 18px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .v-pill.focado{
+    border-color: var(--acento);
+    box-shadow: 0 0 0 3px var(--acento-claro);
+  }
+  .v-pill svg{ flex-shrink:0; opacity:0.55; }
+  .v-pill input{
+    border:none; outline:none; background:transparent;
+    font-size: 15px; font-family: 'Work Sans', sans-serif;
+    color: var(--tinta); width:100%;
+  }
+
+  /* ---------- 3. expansível ---------- */
+  .v-expand{
+    display:flex; justify-content:flex-start;
+  }
+  .v-expand-box{
+    display:flex; align-items:center;
+    background: var(--tinta);
+    border-radius: 24px;
+    height: 48px;
+    width: 48px;
+    overflow: hidden;
+    transition: width 0.35s cubic-bezier(.4,0,.2,1);
+    cursor: pointer;
+    padding: 0 14px;
+  }
+  .v-expand-box.aberto{ width: 100%; max-width: 480px; cursor: text; }
+  .v-expand-box svg{ flex-shrink:0; color:#fff; opacity:0.9; }
+  .v-expand-box input{
+    border:none; outline:none; background:transparent;
+    color:#fff; font-size:15px; font-family:'Work Sans', sans-serif;
+    margin-left: 10px; width:100%;
+    opacity:0; transition: opacity 0.2s ease;
+  }
+  .v-expand-box.aberto input{ opacity:1; }
+
+  /* ---------- 4. split com categoria (estilo e-commerce) ---------- */
+  .v-split{
+    display:flex;
+    border: 1px solid var(--tinta);
+    background:#fff;
+  }
+  .v-split select{
+    border:none; outline:none;
+    background: var(--papel);
+    font-family:'Work Sans', sans-serif;
+    font-size: 13px;
+    padding: 0 12px;
+    border-right: 1px solid var(--tinta);
+    color: var(--tinta-suave);
+    max-width: 110px;
+  }
+  .v-split input{
+    flex:1; border:none; outline:none;
+    padding: 12px 14px; font-size: 15px;
+    font-family:'Work Sans', sans-serif;
+  }
+  .v-split button{
+    border:none; background: var(--tinta); color:#fff;
+    padding: 0 20px; cursor:pointer;
+    font-family:'Work Sans', sans-serif; font-size: 14px;
+  }
+  .v-split button:hover{ background: var(--acento); }
+
+  /* ---------- 5. busca por voz ---------- */
+  .v-voz{
+    display:flex; align-items:center; gap: 12px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--linha);
+    padding: 10px 10px 10px 16px;
+  }
+  .v-voz input{
+    flex:1; border:none; outline:none;
+    font-size: 15px; font-family:'Work Sans', sans-serif;
+  }
+  .v-voz .mic{
+    width: 36px; height:36px;
+    border-radius: 50%;
+    background: var(--acento-claro);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    position:relative;
+    flex-shrink:0;
+  }
+  .v-voz .mic svg{ color: var(--acento); z-index:2; }
+  .v-voz .mic.ouvindo::before,
+  .v-voz .mic.ouvindo::after{
+    content:'';
+    position:absolute;
+    border-radius:50%;
+    border: 1px solid var(--acento);
+    inset: 0;
+    animation: pulso 1.4s ease-out infinite;
+  }
+  .v-voz .mic.ouvindo::after{ animation-delay: 0.7s; }
+  @keyframes pulso{
+    0%{ transform: scale(1); opacity: 0.8; }
+    100%{ transform: scale(2.2); opacity: 0; }
+  }
+
+  /* ---------- 6. vidro sobre imagem ---------- */
+  .v-vidro-fundo{
+    position: relative;
+    border-radius: 14px;
+    overflow: visible;
+    padding: 46px 22px;
+    background: linear-gradient(135deg, #2C3E3A, #17181C 70%);
+  }
+  .v-vidro-fundo .campo{ position: relative; }
+  .v-vidro{
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 999px;
+    display:flex; align-items:center; gap:10px;
+    padding: 12px 18px;
+  }
+  .v-vidro svg{ color:#fff; opacity:0.85; flex-shrink:0; }
+  .v-vidro input{
+    border:none; outline:none; background:transparent;
+    color:#fff; font-family:'Work Sans', sans-serif; font-size:15px;
+    width:100%;
+  }
+  .v-vidro input::placeholder{ color: rgba(255,255,255,0.65); }
+
+  footer{
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    font-size: 13px;
+    color: var(--tinta-suave);
+  }
+</style>
+</head>
+<body>
+
+<div class="topo">
+  <h1>Um jeito diferente de procurar</h1>
+  <p>Seis variações de barra de pesquisa, todas com termos mais buscados ao focar e autocomplete real ao digitar — só muda a moldura.</p>
+</div>
+
+<main>
+
+  <div class="item">
+    <div>
+      <h2>Underline</h2>
+      <div class="desc">Sem caixa, sem borda — só uma linha que ganha cor ao focar. Clique no campo.</div>
+    </div>
+    <div class="campo" data-busca>
+      <div class="v-underline-campo">
+        <input type="text" placeholder="Buscar produto..." data-input>
+        <div class="risco"></div>
+      </div>
+      <div class="menu-sugestoes" data-menu></div>
+    </div>
+  </div>
+
+  <div class="item">
+    <div>
+      <h2>Pill com ícone</h2>
+      <div class="desc">O modelo mais comum do mercado, com foco visível e respiro generoso.</div>
+    </div>
+    <div class="campo" data-busca>
+      <div class="v-pill" data-pill>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="O que você procura?" data-input>
+      </div>
+      <div class="menu-sugestoes" data-menu></div>
+    </div>
+  </div>
+
+  <div class="item">
+    <div>
+      <h2>Expansível</h2>
+      <div class="desc">Começa como ícone e se abre ao clicar — bom para headers com pouco espaço.</div>
+    </div>
+    <div class="campo" data-busca>
+      <div class="v-expand-box" id="caixaExpansivel">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Pesquisar..." data-input>
+      </div>
+      <div class="menu-sugestoes" data-menu></div>
+    </div>
+  </div>
+
+  <div class="item">
+    <div>
+      <h2>Split com categoria</h2>
+      <div class="desc">O clássico de e-commerce: escolhe a categoria antes de digitar.</div>
+    </div>
+    <div class="campo" data-busca>
+      <div class="v-split">
+        <select>
+          <option>Tudo</option>
+          <option>Roupas</option>
+          <option>Calçados</option>
+          <option>Acessórios</option>
+        </select>
+        <input type="text" placeholder="Buscar..." data-input>
+        <button>Buscar</button>
+      </div>
+      <div class="menu-sugestoes" data-menu></div>
+    </div>
+  </div>
+
+  <div class="item">
+    <div>
+      <h2>Busca por voz</h2>
+      <div class="desc">Clique no microfone para o estado "ouvindo" — o campo mantém o mesmo menu de sugestões.</div>
+    </div>
+    <div class="campo" data-busca>
+      <div class="v-voz">
+        <input type="text" placeholder="Fale ou digite..." data-input>
+        <div class="mic" id="microfone">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+        </div>
+      </div>
+      <div class="menu-sugestoes" data-menu></div>
+    </div>
+  </div>
+
+  <div class="item">
+    <div>
+      <h2>Vidro fosco</h2>
+      <div class="desc">Efeito glass sobre um gradiente — pensado para hero de página. Menu combina com o fundo escuro.</div>
+    </div>
+    <div class="v-vidro-fundo">
+      <div class="campo" data-busca data-escuro>
+        <div class="v-vidro">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Buscar no site..." data-input>
+        </div>
+        <div class="menu-sugestoes" data-menu></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // expansível: abre/fecha a caixa de ícone
+  const caixaExpansivel = document.getElementById('caixaExpansivel');
+  const inputExpansivel = caixaExpansivel.querySelector('input');
+  caixaExpansivel.addEventListener('click', () => {
+    if(!caixaExpansivel.classList.contains('aberto')){
+      caixaExpansivel.classList.add('aberto');
+      setTimeout(() => inputExpansivel.focus(), 200);
+    }
+  });
+  inputExpansivel.addEventListener('blur', () => {
+    if(inputExpansivel.value === ''){ caixaExpansivel.classList.remove('aberto'); }
+  });
+
+  // pill: realce ao focar (feito em JS porque o SVG está fora do input)
+  const pillCaixa = document.querySelector('[data-pill]');
+  const pillInput = pillCaixa.querySelector('input');
+  pillInput.addEventListener('focus', () => pillCaixa.classList.add('focado'));
+  pillInput.addEventListener('blur', () => pillCaixa.classList.remove('focado'));
+
+  // microfone: só o estado visual de "ouvindo"
+  const microfone = document.getElementById('microfone');
+  microfone.addEventListener('click', (e) => {
+    e.stopPropagation();
+    microfone.classList.toggle('ouvindo');
+  });
+
+  // ---------- termos mais buscados + autocomplete, aplicado a todos os campos ----------
+  const termosPopulares = ['saia calça', 'short saia', 'blusa', 'calça', 'tapa bumbum', 'top', 'saia'];
+  const catalogoBusca = ['saia calça', 'short saia', 'blusa', 'calça', 'tapa bumbum', 'top', 'saia', 'vestido', 'macacão', 'camisa', 'jaqueta', 'sandália', 'sapato', 'moletom canguru', 'moletom com capuz'];
+
+  const svgLupa = '<svg class="lupa" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+
+  function linhaPopular(termo, indice){
+    return `<div class="linha" data-termo="${termo}">
+      <span class="num">${indice}</span>
+      <span>${termo}</span>
+    </div>`;
+  }
+
+  function linhaSugestao(termo, busca){
+    const idx = termo.toLowerCase().indexOf(busca);
+    const destaque = termo.slice(idx, idx + busca.length);
+    const marcado = idx >= 0 ? termo.replace(new RegExp(destaque, 'i'), `<mark>${destaque}</mark>`) : termo;
+    return `<div class="linha" data-termo="${termo}">
+      ${svgLupa}
+      <span>${marcado}</span>
+    </div>`;
+  }
+
+  function renderizarMenu(menu, busca){
+    if(busca === ''){
+      menu.innerHTML = `<div class="cabecalho">Buscas populares</div>`
+        + termosPopulares.map((t, i) => linhaPopular(t, i + 1)).join('');
+      return;
+    }
+    const encontrados = catalogoBusca.filter(p => p.toLowerCase().includes(busca));
+    if(encontrados.length === 0){
+      menu.innerHTML = `<div class="vazio">Nenhum resultado para "${busca}"</div>`;
+      return;
+    }
+    menu.innerHTML = `<div class="cabecalho">Sugestões</div>`
+      + encontrados.map(p => linhaSugestao(p, busca)).join('');
+  }
+
+  document.querySelectorAll('[data-busca]').forEach(container => {
+    const input = container.querySelector('[data-input]');
+    const menu = container.querySelector('[data-menu]');
+    if(container.hasAttribute('data-escuro')){ menu.classList.add('escuro'); }
+
+    input.addEventListener('focus', () => {
+      renderizarMenu(menu, input.value.trim().toLowerCase());
+      menu.classList.add('visivel');
+    });
+
+    input.addEventListener('input', () => {
+      renderizarMenu(menu, input.value.trim().toLowerCase());
+      menu.classList.add('visivel');
+    });
+
+    menu.addEventListener('click', (e) => {
+      const linha = e.target.closest('.linha');
+      if(linha){
+        input.value = linha.dataset.termo;
+        menu.classList.remove('visivel');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if(!container.contains(e.target)){ menu.classList.remove('visivel'); }
+    });
+  });
+</script>
+
+</body>
+</html>
